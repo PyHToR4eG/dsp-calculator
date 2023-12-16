@@ -277,7 +277,7 @@
         {
             "name": "Refined oil", "key_name": "refined_oil+coal", "category": "oil_refinery",
             "time": 4,
-            "ingredients": [["refined_oil_alt", 2], ["coal_ore", 1]],
+            "ingredients": [["refined_oil_alt", 2], ["coal_ore", 1], ["hydrogen", 1]],
             "product": ["refined_oil", 3]
         },
         {
