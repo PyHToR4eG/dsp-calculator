@@ -206,7 +206,7 @@
         {"name": "Plasma capsule", "key_name": "plasma_capsule", "tier": 5, "stack_size": 100},
         {"name": "Antimatter capsule", "key_name": "antimatter_capsule", "tier": 5, "stack_size": 100},
         {"name": "Plasma turret", "key_name": "plasma_turret", "tier": 5, "stack_size": 50},
-        {"name": "SR Plasma-turret", "key_name": "plasma_turret_sr", "tier": 5, "stack_size": 50},
+        {"name": "SR Plasma turret", "key_name": "plasma_turret_sr", "tier": 5, "stack_size": 50},
 
         {"name": "Jamming capsule", "key_name": "jamming_capsule", "tier": 6, "stack_size": 100},
         {"name": "Suppressing capsule", "key_name": "suppressing_capsule", "tier": 6, "stack_size": 100},
@@ -992,6 +992,12 @@
             "time": 10,
             "ingredients": [["chemical_plant", 1], ["titanium_glass", 10], ["strange_matter", 3], ["quantum_chip", 3]],
             "product": ["quantum_chemical_plant", 1]
+        },
+        {
+            "name": "Combustible unit", "key_name": "combustible_unit", "category": "crafting",
+            "time": 3,
+            "ingredients": [["coal", 3]],
+            "product": ["combustible_unit", 1]
         }
     ],
     "resources": [
