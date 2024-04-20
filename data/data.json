@@ -996,7 +996,7 @@
         {
             "name": "Combustible unit", "key_name": "combustible_unit", "category": "crafting",
             "time": 3,
-            "ingredients": [["coal", 3]],
+            "ingredients": [["coal_ore", 3]],
             "product": ["combustible_unit", 1]
         }
     ],
