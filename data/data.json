@@ -7,18 +7,22 @@
     "assemblers": [
         {"name": "Assembling machine Mk.I", "key_name": "assembler1", "rate": 0.75},
         {"name": "Assembling machine Mk.II", "key_name": "assembler2", "rate": 1.0},
-        {"name": "Assembling machine Mk.III", "key_name": "assembler3", "rate": 1.5}
+        {"name": "Assembling machine Mk.III", "key_name": "assembler3", "rate": 1.5},
+        {"name": "Recomposing assembler", "key_name": "assembler4", "rate": 3}
     ],
     "smelters": [
         {"name": "Smelter", "key_name": "smelter1", "rate": 1},
-        {"name": "Plane smelter", "key_name": "smelter2", "rate": 2}
+        {"name": "Plane smelter", "key_name": "smelter2", "rate": 2},
+        {"name": "Negentropy smelter", "key_name": "smelter3", "rate": 3}
     ],
     "buildings": [
         {"name": "Assembling machine Mk.I", "key_name": "assembler1", "category": "crafting", "power": 270, "max": 4, "rate": 0.75},
         {"name": "Assembling machine Mk.II", "key_name": "assembler2", "category": "crafting", "power": 540, "max": 4, "rate": 1},
         {"name": "Assembling machine Mk.III", "key_name": "assembler3", "category": "crafting", "power": 1080, "max": 4, "rate": 1.5},
+        {"name": "Recomposing assembler", "key_name": "assembler4", "category": "crafting", "power": 2700, "max": 4, "rate": 3},
         {"name": "Smelter", "key_name": "smelter1", "category": "smelting", "power": 360, "max": 4, "rate": 1},
         {"name": "Plane smelter", "key_name": "smelter2", "category": "smelting", "power": 1440, "max": 4, "rate": 2},
+        {"name": "Negentropy smelter", "key_name": "smelter3", "category": "smelting", "power": 2880, "max": 4, "rate": 3},
         {"name": "Matrix lab", "key_name": "matrix_lab", "category": "matrix_lab", "power": 480, "max": 4, "rate": 1},
         {"name": "Chemical plant", "key_name": "chemical_plant", "category": "chemical_plant", "power": 720, "max": 4, "rate": 1},
         {"name": "Oil refinery", "key_name": "oil_refinery", "category": "oil_refinery", "power": 960, "max": 4, "rate": 1},
@@ -202,7 +206,17 @@
         {"name": "Plasma capsule", "key_name": "plasma_capsule", "tier": 5, "stack_size": 100},
         {"name": "Antimatter capsule", "key_name": "antimatter_capsule", "tier": 5, "stack_size": 100},
         {"name": "Plasma turret", "key_name": "plasma_turret", "tier": 5, "stack_size": 50},
-        {"name": "SR Plasma-turret", "key_name": "plasma_turret_sr", "tier": 5, "stack_size": 50}
+        {"name": "SR Plasma-turret", "key_name": "plasma_turret_sr", "tier": 5, "stack_size": 50},
+
+        {"name": "Jamming capsule", "key_name": "jamming_capsule", "tier": 6, "stack_size": 100},
+        {"name": "Suppressing capsule", "key_name": "suppressing_capsule", "tier": 6, "stack_size": 100},
+        {"name": "Negentropy smelter", "key_name": "negentropy_smelter", "tier": 6, "stack_size": 50},
+        {"name": "Recomposing assembler", "key_name": "recomposing_assembler", "tier": 6, "stack_size": 50},
+        {"name": "Self-evolution lab", "key_name": "self_evolution_lab", "tier": 6, "stack_size": 50},
+        {"name": "Battlefield analysis base", "key_name": "battlefield_analysis_base", "tier": 6, "stack_size": 50},
+        {"name": "Jammer tower", "key_name": "jammer_tower", "tier": 6, "stack_size": 50},
+        {"name": "Signal tower", "key_name": "signal_tower", "tier": 6, "stack_size": 50},
+        {"name": "Planetary shield generator", "key_name": "planetary_shield_generator", "tier": 6, "stack_size": 50}
     ],
     "recipes": [
         {
