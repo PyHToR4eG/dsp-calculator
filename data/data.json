@@ -81,7 +81,7 @@
         {"name": "Spray coater", "key_name": "spray_coater", "tier": 0, "stack_size": 50},
         {"name": "Sorter MK.I", "key_name": "sorter_mk_i", "tier": 0, "stack_size": 200},
         {"name": "Sorter MK.II", "key_name": "sorter_mk_ii", "tier": 0, "stack_size": 200},
-        {"name": "Sorter MK.III", "key_name": "sorter_mk_iii", "tier": 4, "stack_size": 200},
+        {"name": "Sorter MK.III", "key_name": "sorter_mk_iii", "tier": 0, "stack_size": 200},
         {"name": "Mining machine", "key_name": "mining_machine", "tier": 0, "stack_size": 50},
 
         {"name": "Crystal silicon", "key_name": "crystal_silicon", "tier": 1, "stack_size": 100},
@@ -108,6 +108,7 @@
         {"name": "Oil refinery", "key_name": "oil_refinery", "tier": 1, "stack_size": 30},
         {"name": "Matrix lab", "key_name": "matrix_lab", "tier": 1, "stack_size": 50},
 
+        {"name": "Engine", "key_name": "engine", "tier": 2, "stack_size": 100},
         {"name": "Electric motor", "key_name": "electric_motor", "tier": 2, "stack_size": 100},
         {"name": "Electromagnetic turbine", "key_name": "electromagnetic_turbine", "tier": 2, "stack_size": 100},
         {"name": "Super-magnetic ring", "key_name": "super-magnetic_ring", "tier": 2, "stack_size": 100},
