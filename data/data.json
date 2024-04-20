@@ -153,6 +153,7 @@
         {"name": "Gauss turret", "key_name": "gauss_turret", "tier": 3, "stack_size": 20},
         {"name": "Missile turret", "key_name": "missile_turret", "tier": 3, "stack_size": 20},
         {"name": "Implosion cannon", "key_name": "implosion_cannon", "tier": 3, "stack_size": 20},
+        {"name": "Laser turret", "key_name": "laser_turret", "tier": 3, "stack_size": 20},
 
         
         {"name": "Strange matter", "key_name": "strange_matter", "tier": 4, "stack_size": 100},
@@ -175,6 +176,9 @@
         {"name": "Missile set", "key_name": "missile_set", "tier": 4, "stack_size": 100},
         {"name": "Supersonic missile set", "key_name": "supersonic_missile_set", "tier": 4, "stack_size": 100},
         {"name": "Gravity missile set", "key_name": "gravity_missile_set", "tier": 4, "stack_size": 100},
+        {"name": "Shell set", "key_name": "shell_set", "tier": 4, "stack_size": 100},
+        {"name": "High explosive shell", "key_name": "high_explosive_shell", "tier": 4, "stack_size": 100},
+        {"name": "Crystal shell", "key_name": "crystal_shell", "tier": 4, "stack_size": 100},
 
         {"name": "Electromagnetic matrix", "key_name": "electromagnetic_matrix", "tier": 5, "stack_size": 200},
         {"name": "Energy matrix", "key_name": "energy_matrix", "tier": 5, "stack_size": 200},
@@ -189,7 +193,16 @@
         {"name": "Annihilation constraint sphere", "key_name": "annihilation_constraint_sphere", "tier": 5, "stack_size": 20},
         {"name": "Artificial star", "key_name": "artificial_star", "tier": 5, "stack_size": 20},
         {"name": "EM-Rail Ejector", "key_name": "em-rail_ejector", "tier": 5, "stack_size": 30},
-        {"name": "Vertical launching silo", "key_name": "vertical_launching_silo", "tier": 5, "stack_size": 10}
+        {"name": "Vertical launching silo", "key_name": "vertical_launching_silo", "tier": 5, "stack_size": 10},
+        {"name": "Prototype", "key_name": "prototype", "tier": 5, "stack_size": 100},
+        {"name": "Precision drone", "key_name": "precision_drone", "tier": 5, "stack_size": 100},
+        {"name": "Attack drone", "key_name": "attack_drone", "tier": 5, "stack_size": 100},
+        {"name": "Corvette", "key_name": "corvette", "tier": 5, "stack_size": 50},
+        {"name": "Destroyer", "key_name": "destroyer", "tier": 5, "stack_size": 50},
+        {"name": "Plasma capsule", "key_name": "plasma_capsule", "tier": 5, "stack_size": 100},
+        {"name": "Antimatter capsule", "key_name": "antimatter_capsule", "tier": 5, "stack_size": 100},
+        {"name": "Plasma turret", "key_name": "plasma_turret", "tier": 5, "stack_size": 50},
+        {"name": "SR Plasma-turret", "key_name": "plasma_turret_sr", "tier": 5, "stack_size": 50}
     ],
     "recipes": [
         {
