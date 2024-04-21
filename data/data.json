@@ -1058,43 +1058,7 @@
             "time": 3,
             "ingredients": [["titanium_ammo_box", 1], ["titanium_alloy", 1]],
             "product": ["superalloy_ammo_box", 1]
-        },
-        {
-            "name": "Gauss turret", "key_name": "gauss_turret", "category": "crafting",
-            "time": 4,
-            "ingredients": [["circuit_board", 2], ["gear", 8], ["iron_ingot", 8], ["magnetic_coil", 4]],
-            "product": ["gauss_turret", 1]
-        },
-        {
-            "name": "Missile turret", "key_name": "missile_turret", "category": "crafting",
-            "time": 6,
-            "ingredients": [["circuit_board", 12], ["engine", 6], ["electric_motor", 6], ["steel", 8]],
-            "product": ["missile_turret", 1]
-        },
-        {
-            "name": "Implosion cannon", "key_name": "implosion_cannon", "category": "crafting",
-            "time": 5,
-            "ingredients": [["circuit_board", 10], ["electric_motor", 8], ["steel", 10], ["super-magnetic_ring", 2]],
-            "product": ["implosion_cannon", 1]
-        },
-        {
-            "name": "Laser turret", "key_name": "laser_turret", "category": "crafting",
-            "time": 6,
-            "ingredients": [["circuit_board", 6], ["photon_combiner", 9], ["plasma_exciter", 6], ["steel", 9]],
-            "product": ["laser_turret", 1]
-        },
-        {
-            "name": "Plasma turret", "key_name": "plasma_turret", "category": "crafting",
-            "time": 10,
-            "ingredients": [["plasma_exciter", 5], ["processor", 5], ["super-magnetic_ring", 10], ["titanium_alloy", 20], ["titanium_glass", 10]],
-            "product": ["plasma_turret", 1]
-        },
-        {
-            "name": "SR Plasma turret", "key_name": "plasma_turret_sr", "category": "crafting",
-            "time": 8,
-            "ingredients": [["plasma_exciter", 5], ["processor", 5], ["steel", 15], ["super-magnetic_ring", 5]],
-            "product": ["plasma_turret_sr", 1]
-        }        
+        }
     ],
     "resources": [
         {"key_name": "iron_ore", "category": "mineral"},
