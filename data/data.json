@@ -1020,7 +1020,7 @@
         {
             "name": "Missile set", "key_name": "missile_set", "category": "crafting",
             "time": 2,
-            "ingredients": [["circuit_board", 3], ["copper_ingot", 6], ["combustible_unit", 2], ["engine', 1"]],
+            "ingredients": [["circuit_board", 3], ["copper_ingot", 6], ["combustible_unit", 2], ["engine", 1]],
             "product": ["missile_set", 1]
         },
         {
