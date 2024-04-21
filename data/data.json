@@ -1040,6 +1040,24 @@
             "time": 3,
             "ingredients": [["copper_ingot", 2], ["magnetic_coil", 1]],
             "product": ["engine", 1]
+        },
+        {
+            "name": "Magnum ammo box", "key_name": "magnum_ammo_box", "category": "crafting",
+            "time": 1,
+            "ingredients": [["copper_ingot", 3]],
+            "product": ["magnum_ammo_box", 1]
+        },
+        {
+            "name": "Titanium ammo box", "key_name": "titanium_ammo_box", "category": "crafting",
+            "time": 2,
+            "ingredients": [["magnum_ammo_box", 1], ["titanium_ingot", 2]],
+            "product": ["titanium_ammo_box", 1]
+        },
+        {
+            "name": "Superalloy ammo box", "key_name": "superalloy_ammo_box", "category": "crafting",
+            "time": 3,
+            "ingredients": [["titanium_ammo_box", 1], ["titanium_alloy", 1]],
+            "product": ["superalloy_ammo_box", 1]
         }
         
     ],
