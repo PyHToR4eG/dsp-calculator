@@ -1006,16 +1006,34 @@
             "product": ["combustible_unit", 1]
         },
         {
-            "name": "Explosive unit", "key_name": "explosive_unit", "category": "crafting",
+            "name": "Explosive unit", "key_name": "explosive_unit", "category": "chemical_plant",
             "time": 6,
             "ingredients": [["combustible_unit", 2], ["plastic", 2], ["sulfuric_acid", 1]],
             "product": ["explosive_unit", 2]
         },
         {
-            "name": "Crystal explosive unit", "key_name": "crystal_explosive_unit", "category": "crafting",
+            "name": "Crystal explosive unit", "key_name": "crystal_explosive_unit", "category": "chemical_plant",
             "time": 24,
             "ingredients": [["casimir_crystal", 1], ["crystal_silicon", 8], ["explosive_unit", 8]],
             "product": ["crystal_explosive_unit", 8]
+        },
+        {
+            "name": "Missile set", "key_name": "missile_set", "category": "crafting",
+            "time": 2,
+            "ingredients": [["circuit_board", 3], ["copper_ingot", 6], ["combustible_unit", 2], ["engine', 1"]],
+            "product": ["missile_set", 1]
+        },
+        {
+            "name": "Supersonic missile set", "key_name": "supersonic_missile_set", "category": "crafting",
+            "time": 4,
+            "ingredients": [["explosive_unit", 4], ["missile_set", 2], ["processor", 4], ["thruster", 2]],
+            "product": ["supersonic_missile_set", 2]
+        },
+        {
+            "name": "Gravity missile set", "key_name": "gravity_missile_set", "category": "crafting",
+            "time": 6,
+            "ingredients": [["crystal_explosive_unit", 6], ["supersonic_missile_set", 3], ["strange_matter", 3]],
+            "product": ["gravity_missile_set", 3]
         }
         
     ],
