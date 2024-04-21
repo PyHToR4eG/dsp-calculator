@@ -1179,6 +1179,36 @@
             "time": 8,
             "ingredients": [["jamming_capsule", 2], ["super-magnetic_ring", 1], ["titanium_glass", 2]],
             "product": ["suppressing_capsule", 2]
+        },
+        {
+            "name": "Prototype", "key_name": "prototype", "category": "crafting",
+            "time": 2,
+            "ingredients": [["circuit_board", 2], ["engine", 1], ["iron_ingot", 3], ["plasma_exciter", 1]],
+            "product": ["prototype", 1]
+        },
+        {
+            "name": "Precision drone", "key_name": "precision_drone", "category": "crafting",
+            "time": 4,
+            "ingredients": [["circuit_board", 2], ["prototype", 1], ["electromagnetic_turbine", 1], ["photon_combiner", 2]],
+            "product": ["precision_drone", 1]
+        },
+        {
+            "name": "Attack drone", "key_name": "attack_drone", "category": "crafting",
+            "time": 4,
+            "ingredients": [["prototype", 1], ["electromagnetic_turbine", 1], ["particle_container", 1], ["processor", 1]],
+            "product": ["attack_drone", 1]
+        },
+        {
+            "name": "Corvette", "key_name": "corvette", "category": "crafting",
+            "time": 5,
+            "ingredients": [["particle_container", 3], ["processor", 2], ["reinforced_thruster", 1], ["titanium_alloy", 5]],
+            "product": ["corvette", 1]
+        },
+        {
+            "name": "Destroyer", "key_name": "destroyer", "category": "crafting",
+            "time": 8,
+            "ingredients": [["frame_material", 20], ["processor", 4], ["reinforced_thruster", 4], ["strange_matter", 1]],
+            "product": ["destroyer", 1]
         }
     ],
     "resources": [
