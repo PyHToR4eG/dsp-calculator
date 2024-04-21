@@ -24,6 +24,7 @@
         {"name": "Plane smelter", "key_name": "smelter2", "category": "smelting", "power": 1440, "max": 4, "rate": 2},
         {"name": "Negentropy smelter", "key_name": "smelter3", "category": "smelting", "power": 2880, "max": 4, "rate": 3},
         {"name": "Matrix lab", "key_name": "matrix_lab", "category": "matrix_lab", "power": 480, "max": 4, "rate": 1},
+        {"name": "Self-evolution lab", "key_name": "matrix_lab2", "category": "matrix_lab", "power": 1920, "max": 4, "rate": 3},
         {"name": "Chemical plant", "key_name": "chemical_plant", "category": "chemical_plant", "power": 720, "max": 4, "rate": 1},
         {"name": "Oil refinery", "key_name": "oil_refinery", "category": "oil_refinery", "power": 960, "max": 4, "rate": 1},
         {"name": "Fractionator", "key_name": "fractionator", "category": "fractionator", "power": 720, "max": 4, "rate": 1},
@@ -1128,7 +1129,7 @@
         {
             "name": "Recomposing assembler", "key_name": "assembler4", "category": "crafting",
             "time": 5,
-            "ingredients": [["assembler3", 1], ["energy_shard", 30], ["matter_recombinator", 10], ["quantum_chip", 4]],
+            "ingredients": [["assembling_machine_mk_iii", 1], ["energy_shard", 30], ["matter_recombinator", 10], ["quantum_chip", 4]],
             "product": ["assembler4", 1]
         },
         {
