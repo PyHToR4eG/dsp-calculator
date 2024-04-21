@@ -182,7 +182,7 @@
         {"name": "Supersonic missile set", "key_name": "supersonic_missile_set", "tier": 4, "stack_size": 100},
         {"name": "Gravity missile set", "key_name": "gravity_missile_set", "tier": 4, "stack_size": 100},
         {"name": "Shell set", "key_name": "shell_set", "tier": 4, "stack_size": 100},
-        {"name": "High explosive shell", "key_name": "high_explosive_shell", "tier": 4, "stack_size": 100},
+        {"name": "High-explosive shell", "key_name": "high-explosive_shell", "tier": 4, "stack_size": 100},
         {"name": "Crystal shell", "key_name": "crystal_shell", "tier": 4, "stack_size": 100},
 
         {"name": "Electromagnetic matrix", "key_name": "electromagnetic_matrix", "tier": 5, "stack_size": 200},
@@ -1137,6 +1137,48 @@
             "time": 4,
             "ingredients": [["dark_fog_matrix", 20], ["silicon_based_neuron", 10], ["matrix_lab", 1], ["quantum_chip", 4]],
             "product": ["matrix_lab2", 1]
+        },
+        {
+            "name": "Shell set", "key_name": "shell_set", "category": "crafting",
+            "time": 1.5,
+            "ingredients": [["copper_ingot", 9], ["combustible_unit", 2]],
+            "product": ["shell_set", 1]
+        },
+        {
+            "name": "High-explosive shell", "key_name": "high-explosive_shell", "category": "crafting",
+            "time": 3,
+            "ingredients": [["explosive_unit", 2], ["shell_set", 1], ["titanium_ingot", 6]],
+            "product": ["high-explosive_shell", 1]
+        },
+        {
+            "name": "Crystal shell", "key_name": "crystal_shell", "category": "crafting",
+            "time": 6,
+            "ingredients": [["crystal_explosive_unit", 2], ["high-explosive_shell", 1], ["titanium_alloy", 3]],
+            "product": ["crystal_shell", 1]
+        },
+        {
+            "name": "Plasma capsule", "key_name": "plasma_capsule", "category": "crafting",
+            "time": 2,
+            "ingredients": [["deuterium", 10], ["graphene", 1], ["magnet", 2]],
+            "product": ["plasma_capsule", 1]
+        },
+        {
+            "name": "Antimatter capsule", "key_name": "antimatter_capsule", "category": "crafting",
+            "time": 2,
+            "ingredients": [["antimatter", 10], ["plasma_capsule", 1], ["hydrogen", 10], ["particle_container", 1]],
+            "product": ["antimatter_capsule", 1]
+        },
+        {
+            "name": "Jamming capsule", "key_name": "jamming_capsule", "category": "crafting",
+            "time": 2,
+            "ingredients": [["electromagnetic_turbine", 1], ["hydrogen", 3], ["plasma_exciter", 1]],
+            "product": ["jamming_capsule", 1]
+        },
+        {
+            "name": "Suppressing capsule", "key_name": "suppressing_capsule", "category": "crafting",
+            "time": 8,
+            "ingredients": [["jamming_capsule", 2], ["super-magnetic_ring", 1], ["titanium_glass", 2]],
+            "product": ["suppressing_capsule", 2]
         }
     ],
     "resources": [
