@@ -1058,6 +1058,12 @@
             "time": 3,
             "ingredients": [["titanium_ammo_box", 1], ["titanium_alloy", 1]],
             "product": ["superalloy_ammo_box", 1]
+        },
+        {
+            "name": "Gauss turret", "key_name": "gauss_turret", "category": "crafting",
+            "time": 4,
+            "ingredients": [["circuit_board", 2], ["gear", 8], ["iron_ingot", 8], ["magnetic_coil", 4]],
+            "product": ["gauss_turret", 1]
         }
     ],
     "resources": [
