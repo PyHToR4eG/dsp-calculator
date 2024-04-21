@@ -1034,6 +1034,12 @@
             "time": 6,
             "ingredients": [["crystal_explosive_unit", 6], ["supersonic_missile_set", 3], ["strange_matter", 3]],
             "product": ["gravity_missile_set", 3]
+        },
+        {
+            "name": "Engine", "key_name": "engine", "category": "crafting",
+            "time": 3,
+            "ingredients": [["copper_ingot", 2], ["magnetic_coil", 1]],
+            "product": ["engine", 1]
         }
         
     ],
