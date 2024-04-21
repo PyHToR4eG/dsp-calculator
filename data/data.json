@@ -1112,6 +1112,30 @@
             "time": 6,
             "ingredients": [["crystal_silicon", 6], ["steel", 12], ["wireless_power_tower", 2]],
             "product": ["signal_tower", 1]
+        },
+        {
+            "name": "Planetary shield generator", "key_name": "planetary_shield_generator", "category": "crafting",
+            "time": 10,
+            "ingredients": [["electromagnetic_turbine", 20], ["particle_container", 5], ["steel", 20], ["super-magnetic_ring", 5]],
+            "product": ["planetary_shield_generator", 1]
+        },
+        {
+            "name": "Negentropy smelter", "key_name": "smelter3", "category": "crafting",
+            "time": 6,
+            "ingredients": [["energy_shard", 2], ["negentropy_singularity", 1], ["smelter2", 1], ["quantum_chip", 1]],
+            "product": ["smelter3", 1]
+        },
+        {
+            "name": "Recomposing assembler", "key_name": "assembler4", "category": "crafting",
+            "time": 5,
+            "ingredients": [["assembler3", 1], ["energy_shard", 30], ["matter_recombinator", 10], ["quantum_chip", 4]],
+            "product": ["assembler4", 1]
+        },
+        {
+            "name": "Self-evolution lab", "key_name": "matrix_lab2", "category": "crafting",
+            "time": 4,
+            "ingredients": [["dark_fog_matrix", 20], ["silicon_based_neuron", 10], ["matrix_lab", 1], ["quantum_chip", 4]],
+            "product": ["matrix_lab2", 1]
         }
     ],
     "resources": [
