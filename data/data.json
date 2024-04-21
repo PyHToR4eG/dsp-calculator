@@ -1082,6 +1082,36 @@
             "time": 6,
             "ingredients": [["circuit_board", 6], ["photon_combiner", 9], ["plasma_exciter", 6], ["steel", 9]],
             "product": ["laser_turret", 1]
+        },
+        {
+            "name": "Plasma turret", "key_name": "plasma_turret", "category": "crafting",
+            "time": 10,
+            "ingredients": [["plasma_exciter", 5], ["processor", 5], ["super-magnetic_ring", 10], ["titanium_alloy", 20], ["titanium_glass", 10]],
+            "product": ["plasma_turret", 1]
+        },
+        {
+            "name": "SR Plasma turret", "key_name": "plasma_turret_sr", "category": "crafting",
+            "time": 8,
+            "ingredients": [["plasma_exciter", 5], ["processor", 5], ["steel", 15], ["super-magnetic_ring", 5]],
+            "product": ["plasma_turret_sr", 1]
+        },
+        {
+            "name": "Battlefield analysis base", "key_name": "battlefield_analysis_base", "category": "crafting",
+            "time": 6,
+            "ingredients": [["circuit_board", 18], ["engine", 12], ["microcrystalline_component", 6], ["steel", 12]],
+            "product": ["battlefield_analysis_base", 1]
+        },
+        {
+            "name": "Jammer tower", "key_name": "jammer_tower", "category": "crafting",
+            "time": 5,
+            "ingredients": [["copper_ingot", 12], ["diamond", 6], ["plasma_exciter", 9], ["processor", 3]],
+            "product": ["jammer_tower", 1]
+        },
+        {
+            "name": "Signal tower", "key_name": "signal_tower", "category": "crafting",
+            "time": 6,
+            "ingredients": [["crystal_silicon", 6], ["steel", 12], ["wireless_power_tower", 2]],
+            "product": ["signal_tower", 1]
         }
     ],
     "resources": [
