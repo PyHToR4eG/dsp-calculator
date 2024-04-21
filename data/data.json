@@ -994,11 +994,30 @@
             "product": ["quantum_chemical_plant", 1]
         },
         {
+            "name": "Strange Annihilation Fuel Rod", "key_name": "strange_antimatter_fuel_rod", "category": "crafting",
+            "time": 32,
+            "ingredients": [["antimatter_fuel_rod", 8], ["core_element", 1], ["frame_material", 1], ["strange_matter", 2]],
+            "product": ["strange_antimatter_fuel_rod", 1]
+        },
+        {
             "name": "Combustible unit", "key_name": "combustible_unit", "category": "crafting",
             "time": 3,
             "ingredients": [["coal_ore", 3]],
             "product": ["combustible_unit", 1]
+        },
+        {
+            "name": "Explosive unit", "key_name": "explosive_unit", "category": "crafting",
+            "time": 6,
+            "ingredients": [["combustible_unit", 2], ["plastic", 2], ["sulfuric_acid", 1]],
+            "product": ["explosive_unit", 2]
+        },
+        {
+            "name": "Crystal explosive unit", "key_name": "crystal_explosive_unit", "category": "crafting",
+            "time": 24,
+            "ingredients": [["casimir_crystal", 1], ["crystal_silicon", 8], ["explosive_unit", 8]],
+            "product": ["crystal_explosive_unit", 8]
         }
+        
     ],
     "resources": [
         {"key_name": "iron_ore", "category": "mineral"},
