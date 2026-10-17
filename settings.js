@@ -14,8 +14,9 @@ limitations under the License.*/
 import {DEFAULT_RATE, DEFAULT_RATE_PRECISION, DEFAULT_COUNT_PRECISION, longRateNames} from "./align.js"
 import {dropdown} from "./dropdown.js"
 import {DEFAULT_TAB, clickTab} from "./events.js"
-import {spec, resourcePurities, DEFAULT_BELT, DEFAULT_ASSEMBLER, DEFAULT_SMELTER} from "./factory.js"
-import {Rational} from "./rational.js"
+import {spec, buildingSettingName, DEFAULT_GRAPH_SCALE, DEFAULT_BELT, DEFAULT_BELT_STACK, DEFAULT_MINER, DEFAULT_MINING_SPEED, DEFAULT_VEINS_PER_MINER, DEFAULT_VEINS_UTILIZATION} from "./factory.js"
+import {LANGUAGES, getLanguage, nameOf, rateUnit, saveLanguage, t} from "./i18n.js"
+import {Rational, zero} from "./rational.js"
 
 // There are several things going on with this control flow. Settings should
 // work like this:
@@ -40,7 +41,7 @@ function renderTab(settings) {
 
 function renderTargets(settings) {
     spec.buildTargets = []
-    d3.select("#targets li.target").remove()
+    d3.selectAll("#targets li.target").remove()
 
     let targetSetting = settings.get("items")
     if (targetSetting !== undefined && targetSetting !== "") {
@@ -63,6 +64,30 @@ function renderTargets(settings) {
     }
 }
 
+// Recipe keys from older links, mapped to [recipe key, product key]: recipes
+// with several products used to be split into one recipe per product.
+const LEGACY_RECIPES = new Map([
+    ["hydrogen+refined_oil1", ["plasma_refining", "hydrogen"]],
+    ["hydrogen+refined_oil2", ["plasma_refining", "refined_oil"]],
+    ["refined_oil+coal", ["reforming_refine", "refined_oil"]],
+    ["graphene+hydrogen1", ["graphene_fire_ice", "graphene"]],
+    ["graphene+hydrogen2", ["graphene_fire_ice", "hydrogen"]],
+    ["hydrogen+energetic_graphite1", ["x_ray_cracking", "hydrogen"]],
+    ["hydrogen+energetic_graphite2", ["x_ray_cracking", "energetic_graphite"]],
+    ["antimatter+hydrogen1", ["antimatter", "antimatter"]],
+    ["antimatter+hydrogen2", ["antimatter", "hydrogen"]],
+    // These used separate "vein" items, now plain mining.
+    ["titanium_crystal_alt", ["organic_crystal_vein", "organic_crystal"]],
+    ["high-purity_silicon_alt", ["silicon_ore", "silicon_ore"]],
+])
+
+function getRecipe(key) {
+    if (LEGACY_RECIPES.has(key)) {
+        key = LEGACY_RECIPES.get(key)[0]
+    }
+    return spec.recipes.get(key)
+}
+
 // ignore
 
 function renderIgnore(settings) {
@@ -72,25 +97,10 @@ function renderIgnore(settings) {
     if (ignoreSetting !== undefined && ignoreSetting !== "") {
         let ignore = ignoreSetting.split(",")
         for (let recipeKey of ignore) {
-            let recipe = spec.recipes.get(recipeKey)
-            spec.ignore.add(recipe)
-        }
-    }
-}
-
-// overclock
-
-function renderOverclock(settings) {
-    spec.overclock.clear()
-    // UI will be rendered later, as part of the solution.
-    let overclockSetting = settings.get("overclock")
-    if (overclockSetting !== undefined && overclockSetting !== "") {
-        let overclock = overclockSetting.split(",")
-        for (let pair of overclock) {
-            let [recipeKey, percentString] = pair.split(":")
-            let recipe = spec.recipes.get(recipeKey)
-            let percent = Rational.from_string(percentString).div(Rational.from_float(100))
-            spec.setOverclock(recipe, percent)
+            let recipe = getRecipe(recipeKey)
+            if (recipe !== undefined) {
+                spec.ignore.add(recipe)
+            }
         }
     }
 }
@@ -126,7 +136,7 @@ function renderRateOptions(settings) {
         .on("change", rateHandler)
     rateOption.append("label")
         .attr("for", d => d.rateName + "_rate")
-        .text(d => "items/" + d.longRateName)
+        .text(d => t("items/" + d.longRateName))
     rateOption.append("br")
 }
 
@@ -145,6 +155,48 @@ function renderPrecisions(settings) {
     d3.select("#cprec").attr("value", spec.format.countPrecision)
 }
 
+// Fills `container` with a row of icon radio buttons, one per option.
+function renderIconSelector(container, name, options, selected, handler) {
+    container.selectAll("*").remove()
+    let option = container.selectAll("span")
+        .data(options)
+        .join("span")
+    option.append("input")
+        .attr("id", d => name + "." + d.key)
+        .attr("type", "radio")
+        .attr("name", name)
+        .attr("value", d => d.key)
+        .attr("checked", d => d === selected ? "" : null)
+        .on("change", handler)
+    option.append("label")
+        .attr("for", d => name + "." + d.key)
+        .append("img")
+        .classed("icon", true)
+        .attr("src", d => d.iconPath())
+        .attr("width", 32)
+        .attr("height", 32)
+        .attr("title", d => nameOf(d))
+}
+
+// graph height
+
+const MAX_GRAPH_SCALE = 10
+
+function renderGraphScale(settings) {
+    let scale = Number(settings.get("gh"))
+    spec.graphScale = scale >= 0.5 && scale <= MAX_GRAPH_SCALE ? scale : DEFAULT_GRAPH_SCALE
+    d3.select("#graph_scale")
+        .property("value", spec.graphScale)
+        .on("change", function() {
+            let x = Number(this.value)
+            if (this.value !== "" && Number.isFinite(x)) {
+                spec.graphScale = Math.min(MAX_GRAPH_SCALE, Math.max(0.5, x))
+                spec.updateSolution()
+            }
+            this.value = spec.graphScale
+        })
+}
+
 // belt
 
 function beltHandler(belt) {
@@ -157,126 +209,74 @@ function renderBelts(settings) {
     if (settings.has("belt")) {
         beltKey = settings.get("belt")
     }
-    spec.belt = spec.belts.get(beltKey)
+    spec.belt = spec.belts.get(beltKey) || spec.belts.get(DEFAULT_BELT)
+    renderIconSelector(d3.select("#belt_selector"), "belt", [...spec.belts.values()], spec.belt, beltHandler)
 
-    let belts = []
-    for (let [beltKey, belt] of spec.belts) {
-        belts.push(belt)
-    }
-    let form = d3.select("#belt_selector")
-    form.selectAll("*").remove()
-    let beltOption = form.selectAll("span")
-        .data(belts)
-        .join("span")
-    beltOption.append("input")
-        .attr("id", d => "belt." + d.key)
-        .attr("type", "radio")
-        .attr("name", "belt")
-        .attr("value", d => d.key)
-        .attr("checked", d => d === spec.belt ? "" : null)
-        .on("change", beltHandler)
-    beltOption.append("label")
-        .attr("for", d => "belt." + d.key)
-        .append("img")
-        .classed("icon", true)
-        .attr("src", d => d.iconPath())
-        .attr("width", 32)
-        .attr("height", 32)
-        .attr("title", d => d.name)
+    let stack = Math.floor(Number(settings.get("stack")))
+    spec.beltStack = stack >= 1 && stack <= 4 ? stack : DEFAULT_BELT_STACK
+    d3.select("#belt_stack")
+        .property("value", spec.beltStack)
+        .on("change", function() {
+            let x = Math.floor(Number(this.value))
+            if (this.value !== "" && x >= 1) {
+                spec.beltStack = Math.min(4, x)
+                spec.updateSolution()
+            }
+            this.value = spec.beltStack
+        })
 }
 
-// assembler
+// buildings
 
-function assemblerHandler(assembler) {
-    spec.assembler = assembler
-    spec.updateSolution()
-}
+const CATEGORY_LABELS = new Map([
+    ["crafting", "Assembling machine:"],
+    ["smelting", "Smelting:"],
+    ["chemical_plant", "Chemical plant:"],
+    ["matrix_lab", "Research:"],
+])
 
-
-
-function renderAssemblers(settings) {
-    let assemblerKey = DEFAULT_ASSEMBLER
-    if (settings.has("assembler")) {
-        assemblerKey = settings.get("assembler")
+function renderBuildingChoices(settings) {
+    spec.buildingChoice = new Map()
+    let categories = spec.getChoosableCategories()
+    for (let [category, buildings] of categories) {
+        let key = settings.get(buildingSettingName(category))
+        let building = buildings.find(building => building.key === key)
+        if (building !== undefined) {
+            spec.buildingChoice.set(category, building)
+        }
     }
-    spec.assembler = spec.assemblers.get(assemblerKey)
 
-    let assemblers = []
-    for (let [assemblerKey, assembler] of spec.assemblers) {
-        assemblers.push(assembler)
-    }
-    let form = d3.select("#assembler_selector")
-    form.selectAll("*").remove()
-    let assemblerOption = form.selectAll("span")
-        .data(assemblers)
-        .join("span")
-    assemblerOption.append("input")
-        .attr("id", d => "assembler." + d.key)
-        .attr("type", "radio")
-        .attr("name", "assembler")
-        .attr("value", d => d.key)
-        .attr("checked", d => d === spec.assembler ? "" : null)
-        .on("change", assemblerHandler)
-    assemblerOption.append("label")
-        .attr("for", d => "assembler." + d.key)
-        .append("img")
-        .classed("icon", true)
-        .attr("src", d => d.iconPath())
-        .attr("width", 32)
-        .attr("height", 32)
-        .attr("title", d => d.name)
-}
-
-// smelters
-
-function smelterHandler(smelter) {
-    spec.smelter = smelter
-    spec.updateSolution()
-}
-
-function renderSmelters(settings) {
-    let smelterKey = DEFAULT_SMELTER
-    if (settings.has("smelter")) {
-        smelterKey = settings.get("smelter")
-    }
-    spec.smelter = spec.smelters.get(smelterKey)
-
-    let smelters = []
-    for (let [smelterKey, smelter] of spec.smelters) {
-        smelters.push(smelter)
-    }
-    let form = d3.select("#smelting_selector")
-    form.selectAll("*").remove()
-    let smelterOption = form.selectAll("span")
-        .data(smelters)
-        .join("span")
-    smelterOption.append("input")
-        .attr("id", d => "smelter." + d.key)
-        .attr("type", "radio")
-        .attr("name", "smelter")
-        .attr("value", d => d.key)
-        .attr("checked", d => d === spec.smelter ? "" : null)
-        .on("change", smelterHandler)
-    smelterOption.append("label")
-        .attr("for", d => "smelter." + d.key)
-        .append("img")
-        .classed("icon", true)
-        .attr("src", d => d.iconPath())
-        .attr("width", 32)
-        .attr("height", 32)
-        .attr("title", d => d.name)
+    let tbody = d3.select("#building_settings")
+    tbody.selectAll("*").remove()
+    let row = tbody.selectAll("tr")
+        .data(categories)
+        .join("tr")
+            .classed("setting-row", true)
+    row.append("td")
+        .classed("setting-label", true)
+        .text(([category]) => t(CATEGORY_LABELS.get(category) || category + ":"))
+    row.append("td")
+        .append("span")
+            .classed("icon-selector", true)
+            .each(function([category, buildings]) {
+                renderIconSelector(d3.select(this), "building-" + category, buildings,
+                    spec.getCategoryBuilding(category), building => {
+                        spec.buildingChoice.set(category, building)
+                        spec.updateSolution()
+                    })
+            })
 }
 
 // alternate recipes
 
-function changeAltRecipe(recipe) {
-    spec.setRecipe(recipe)
+function changeAltRecipe(d) {
+    spec.setRecipe(d.item, d.recipe)
     spec.updateSolution()
 }
 
 function renderIngredient(ingSpan) {
     ingSpan.classed("ingredient", true)
-        .attr("title", d => d.item.name)
+        .attr("title", d => nameOf(d.item))
         .append("img")
         .classed("icon", true)
         .attr("src", d => d.item.iconPath())
@@ -289,20 +289,35 @@ function renderAltRecipes(settings) {
     spec.altRecipes = new Map()
     if (settings.has("alt")) {
         let alt = settings.get("alt").split(",")
-        for (let recipeKey of alt) {
+        for (let entry of alt) {
+            let [itemKey, recipeKey] = entry.split(":")
+            let item = spec.items.get(itemKey)
             let recipe = spec.recipes.get(recipeKey)
-            spec.setRecipe(recipe)
+            if (recipeKey === undefined) {
+                // Old links save just the recipe key.
+                if (LEGACY_RECIPES.has(entry)) {
+                    [recipeKey, itemKey] = LEGACY_RECIPES.get(entry)
+                    item = spec.items.get(itemKey)
+                    recipe = spec.recipes.get(recipeKey)
+                } else {
+                    recipe = spec.recipes.get(entry)
+                    item = recipe && recipe.product.item
+                    // A default recipe is never saved as "alt", so this is a
+                    // link from before alternate recipes got their own keys:
+                    // it meant the last one.
+                    if (item && recipe === item.recipes[0]) {
+                        recipe = item.recipes[item.recipes.length - 1]
+                    }
+                }
+            }
+            if (item === undefined || recipe === undefined || recipe.gives(item) === null) {
+                continue
+            }
+            spec.setRecipe(item, recipe)
         }
     }
 
-    let items = []
-    for (let tier of spec.itemTiers) {
-        for (let item of tier) {
-            if (item.recipes.length > 1) {
-                items.push(item)
-            }
-        }
-    }
+    let items = spec.pickerItems.filter(item => item.recipes.length > 1)
 
     let div = d3.select("#alt_recipe_settings")
     div.selectAll("*").remove()
@@ -312,15 +327,16 @@ function renderAltRecipes(settings) {
         .enter().append("div")
     let recipeLabel = dropdown(
         dropdowns,
-        d => d.recipes,
-        d => `altrecipe-${d.product.item.key}`,
-        d => spec.getRecipe(d.product.item) === d,
+        item => item.recipes.map(recipe => ({item, recipe})),
+        d => `altrecipe-${d.item.key}`,
+        d => spec.getRecipe(d.item) === d.recipe,
         changeAltRecipe,
     )
+    recipeLabel.attr("title", d => nameOf(d.recipe))
 
     let productSpan = recipeLabel.append("span")
         .selectAll("span")
-        .data(d => [d.product])
+        .data(d => d.recipe.products)
         .join("span")
     renderIngredient(productSpan)
     recipeLabel.append("span")
@@ -328,28 +344,175 @@ function renderAltRecipes(settings) {
         .text("\u21d0")
     let ingredientSpan = recipeLabel.append("span")
         .selectAll("span")
-        .data(d => d.ingredients)
+        .data(d => d.recipe.ingredients)
         .join("span")
     renderIngredient(ingredientSpan)
 }
 
-// miners
+// mining
 
-function mineHandler(d) {
-    spec.setMiner(d.recipe, d.miner, d.purity)
+function minerHandler(miner) {
+    spec.mining.miner = miner
     spec.updateSolution()
 }
 
+// Binds a number input to a mining setting. `show` gives the setting's text;
+// `parse` turns the input's text into the setting's value, or returns null to
+// reject it. The input always ends up showing the value actually in use.
+function bindMiningInput(id, show, parse, apply) {
+    d3.select("#" + id)
+        .property("value", show())
+        .on("change", function() {
+            let parsed = parse(this.value)
+            if (parsed !== null) {
+                apply(parsed)
+                spec.updateSolution()
+            }
+            this.value = show()
+        })
+}
+
+function parseNonNegative(s) {
+    s = String(s).trim()
+    return /^\d+(\.\d+)?$/.test(s) ? Rational.from_string(s) : null
+}
+
+function parsePositive(s) {
+    s = String(s).trim()
+    if (!/^\d+(\.\d+)?$/.test(s)) {
+        return null
+    }
+    let x = Rational.from_string(s)
+    return zero.less(x) ? x : null
+}
+
+function renderMining(settings) {
+    let mining = spec.mining
+    let minerKey = settings.has("miner") ? settings.get("miner") : DEFAULT_MINER
+    let miners = spec.buildings.get("mineral")
+    mining.miner = miners.find(miner => miner.key === minerKey) || miners[0]
+
+    let hundred = Rational.from_float(100)
+    mining.speed = settings.has("mspeed")
+        ? (parsePositive(settings.get("mspeed")) || hundred).div(hundred)
+        : DEFAULT_MINING_SPEED
+    mining.veinsPerMiner = settings.has("vpm")
+        ? parsePositive(settings.get("vpm")) || DEFAULT_VEINS_PER_MINER
+        : DEFAULT_VEINS_PER_MINER
+    mining.utilization = settings.has("vu")
+        ? Math.max(0, Math.floor(Number(settings.get("vu"))) || 0)
+        : DEFAULT_VEINS_UTILIZATION
+    mining.oilSeep = settings.has("seep")
+        ? parsePositive(settings.get("seep")) || spec.getDefaultOilSeep()
+        : spec.getDefaultOilSeep()
+
+    renderIconSelector(d3.select("#miner_selector"), "miner", miners, mining.miner, minerHandler)
+    d3.select("#oil_seep_unit").text("/" + rateUnit("s"))
+
+    bindMiningInput("mining_speed", () => mining.speed.mul(hundred).toDecimal(6), s => {
+        let x = Number(s)
+        if (s === "" || !Number.isFinite(x)) {
+            return null
+        }
+        return Rational.from_float(Math.min(300, Math.max(100, Math.round(x)))).div(hundred)
+    }, x => mining.speed = x)
+    bindMiningInput("veins_per_miner", () => mining.veinsPerMiner.toDecimal(6), parsePositive,
+        x => mining.veinsPerMiner = x)
+    bindMiningInput("veins_utilization", () => mining.utilization, s => {
+        let x = Number(s)
+        return s !== "" && Number.isFinite(x) && x >= 0 ? Math.floor(x) : null
+    }, x => mining.utilization = x)
+    bindMiningInput("oil_seep", () => mining.oilSeep.toDecimal(6), parsePositive,
+        x => mining.oilSeep = x)
+
+    renderGiants(settings)
+}
+
+// Gas giants: one row per kind, with an input for each gas's base yield.
+function renderGiants(settings) {
+    let mining = spec.mining
+    let giants = [...spec.recipes.values()].filter(recipe => recipe.category === "orbital")
+    mining.giantYields = new Map()
+    for (let giant of giants) {
+        let values = (settings.get(giant.key) || "").split(",")
+        let yields = new Map()
+        giant.products.forEach((product, i) => {
+            let value = values[i] === undefined ? null : parseNonNegative(values[i])
+            yields.set(product.item, value === null ? giant.defaultYields.get(product.item) : value)
+        })
+        mining.giantYields.set(giant, yields)
+    }
+
+    let tbody = d3.select("#giant_settings")
+    tbody.selectAll("*").remove()
+    let row = tbody.selectAll("tr")
+        .data(giants)
+        .join("tr")
+            .classed("setting-row", true)
+    row.append("td")
+        .classed("setting-label", true)
+        .attr("title", t("Base yield shown on the planet. Each orbital collector gathers 8 times that, plus research, and burns part of it as fuel."))
+        .text(giant => nameOf(giant) + ":")
+    let gas = row.append("td")
+        .selectAll("span")
+        .data(giant => giant.products.map(product => ({giant, item: product.item})))
+        .join("span")
+            .classed("giant-yield", true)
+    gas.append("img")
+        .classed("icon", true)
+        .attr("src", d => d.item.iconPath())
+        .attr("width", 24)
+        .attr("height", 24)
+        .attr("title", d => nameOf(d.item))
+    gas.append("input")
+        .classed("prec", true)
+        .attr("type", "number")
+        .attr("min", 0)
+        .attr("step", 0.01)
+        .property("value", d => mining.giantYields.get(d.giant).get(d.item).toDecimal(6))
+        .on("change", function(d) {
+            let yields = mining.giantYields.get(d.giant)
+            let value = parseNonNegative(this.value)
+            if (value !== null) {
+                yields.set(d.item, value)
+                spec.updateSolution()
+            }
+            this.value = yields.get(d.item).toDecimal(6)
+        })
+    gas.append("span")
+        .text(" /" + rateUnit("s") + " ")
+}
+
+
+// language
+
+// Switching language reloads the page, which re-renders everything in it.
+function renderLanguage() {
+    d3.select("#language_selector").selectAll("*").remove()
+    d3.select("#language_selector")
+        .append("select")
+            .on("change", function() {
+                saveLanguage(this.value)
+                location.reload()
+            })
+        .selectAll("option")
+        .data([...LANGUAGES])
+        .join("option")
+            .attr("value", ([lang]) => lang)
+            .property("selected", ([lang]) => lang === getLanguage())
+            .text(([lang, name]) => name)
+}
 
 export function renderSettings(settings) {
+    renderLanguage()
     renderTargets(settings)
     renderIgnore(settings)
-    renderOverclock(settings)
     renderRateOptions(settings)
     renderPrecisions(settings)
+    renderGraphScale(settings)
     renderBelts(settings)
-    renderAssemblers(settings)
-    renderSmelters(settings)
+    renderBuildingChoices(settings)
+    renderMining(settings)
     renderAltRecipes(settings)
     renderTab(settings)
 }

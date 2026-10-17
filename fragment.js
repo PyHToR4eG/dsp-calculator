@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.*/
 import {DEFAULT_RATE, DEFAULT_RATE_PRECISION, DEFAULT_COUNT_PRECISION} from "./align.js"
 import {DEFAULT_TAB, currentTab} from "./events.js"
-import {spec, DEFAULT_PURITY, DEFAULT_BELT, DEFAULT_ASSEMBLER, DEFAULT_SMELTER} from "./factory.js"
+import {spec, buildingSettingName, DEFAULT_GRAPH_SCALE, DEFAULT_BELT, DEFAULT_BELT_STACK, DEFAULT_MINER, DEFAULT_MINING_SPEED, DEFAULT_VEINS_PER_MINER, DEFAULT_VEINS_UTILIZATION} from "./factory.js"
 import {Rational} from "./rational.js"
 
 export function formatSettings() {
@@ -30,16 +30,20 @@ export function formatSettings() {
     if (spec.format.countPrecision !== DEFAULT_COUNT_PRECISION) {
         settings += "cp=" + spec.format.countPrecision + "&"
     }
+    if (spec.graphScale !== DEFAULT_GRAPH_SCALE) {
+        settings += "gh=" + spec.graphScale + "&"
+    }
     if (spec.belt.key !== DEFAULT_BELT) {
         settings += "belt=" + spec.belt.key + "&"
     }
-
-    if (spec.assembler.key !== DEFAULT_ASSEMBLER) {
-        settings += "assembler=" + spec.assembler.key + "&"
+    if (spec.beltStack !== DEFAULT_BELT_STACK) {
+        settings += "stack=" + spec.beltStack + "&"
     }
-
-    if (spec.smelter.key !== DEFAULT_SMELTER) {
-        settings += "smelter=" + spec.smelter.key + "&"
+    for (let [category, buildings] of spec.getChoosableCategories()) {
+        let building = spec.getCategoryBuilding(category)
+        if (building !== buildings[0]) {
+            settings += buildingSettingName(category) + "=" + building.key + "&"
+        }
     }
 
     settings += "items="
@@ -63,34 +67,34 @@ export function formatSettings() {
         settings += "&ignore=" + ignore.join(",")
     }
 
-    let overclock = []
-    for (let [recipe, factor] of spec.overclock) {
-        let s = factor.mul(Rational.from_float(100)).toString()
-        overclock.push(`${recipe.key}:${s}`)
-    }
-    if (overclock.length > 0) {
-        settings += "&overclock=" + overclock.join(",")
-    }
-
     let alt = []
     for (let [item, recipe] of spec.altRecipes) {
-        alt.push(recipe.key)
+        alt.push(`${item.key}:${recipe.key}`)
     }
     if (alt.length > 0) {
         settings += "&alt=" + alt.join(",")
     }
 
-    let minerStrings = []
-    for (let [recipe, {miner, purity}] of spec.minerSettings) {
-        let miners = spec.buildings.get(recipe.category)
-        let defaultMiner = miners[0]
-        if (miner !== defaultMiner || purity !== DEFAULT_PURITY) {
-            let s = `${recipe.key}:${miner.key}:${purity.key}`
-            minerStrings.push(s)
-        }
+    let mining = spec.mining
+    if (mining.miner.key !== DEFAULT_MINER) {
+        settings += "&miner=" + mining.miner.key
     }
-    if (minerStrings.length > 0) {
-        settings += "&miners=" + minerStrings.join(",")
+    if (!mining.speed.equal(DEFAULT_MINING_SPEED)) {
+        settings += "&mspeed=" + mining.speed.mul(Rational.from_float(100)).toDecimal(6)
+    }
+    if (!mining.veinsPerMiner.equal(DEFAULT_VEINS_PER_MINER)) {
+        settings += "&vpm=" + mining.veinsPerMiner.toDecimal(6)
+    }
+    if (mining.utilization !== DEFAULT_VEINS_UTILIZATION) {
+        settings += "&vu=" + mining.utilization
+    }
+    if (!mining.oilSeep.equal(spec.getDefaultOilSeep())) {
+        settings += "&seep=" + mining.oilSeep.toDecimal(6)
+    }
+    for (let [giant, yields] of mining.giantYields) {
+        if ([...yields].some(([item, value]) => !value.equal(giant.defaultYields.get(item)))) {
+            settings += `&${giant.key}=` + [...yields.values()].map(value => value.toDecimal(6)).join(",")
+        }
     }
 
     return settings

@@ -13,18 +13,39 @@ See the License for the specific language governing permissions and
 limitations under the License.*/
 import { toggleIgnoreHandler } from "./events.js"
 import { spec } from "./factory.js"
+import { nameOf, rateUnit, t } from "./i18n.js"
 import { Rational, zero, one } from "./rational.js"
 import { Ingredient } from "./recipe.js"
 
 const iconSize = 48
+const buildingIconSize = 36
 
 const nodePadding = 20
 
 const columnWidth = 150
+// Height of the tallest box, times the "Graph height" setting.
 const maxNodeHeight = 350
 
+function makeLink(source, target, item, rate) {
+    let link = {
+        "source": source,
+        "target": target,
+        "item": item,
+        "value": rate.toFloat(),
+        "rate": rate,
+    }
+    let belts = []
+    let beltCountExact = spec.getBeltCount(rate)
+    let beltCount = beltCountExact.toFloat()
+    for (let j = one; j.less(beltCountExact); j = j.add(one)) {
+        let i = j.toFloat()
+        belts.push({link, i, beltCount})
+    }
+    link.belts = belts
+    return link
+}
+
 function makeGraph(totals, targets, ignore) {
-    let outputs = []
     let rates = new Map()
     for (let target of targets) {
         let rate = rates.get(target.item)
@@ -34,26 +55,33 @@ function makeGraph(totals, targets, ignore) {
         rate = rate.add(target.getRate())
         rates.set(target.item, rate)
     }
-    for (let [item, rate] of rates) {
-        let ing = new Ingredient(item, rate)
-        outputs.push(ing)
-    }
-    let nodes = [{
-        "name": "output",
-        "ingredients": outputs,
+    // One output node per target item, plus one per byproduct nobody needs.
+    let nodes = []
+    let addOutput = (item, rate, surplus) => nodes.push({
+        "name": surplus ? `${nameOf(item)} ${t("(surplus)")}` : nameOf(item),
+        "item": item,
+        "surplus": surplus,
+        "ingredients": [new Ingredient(item, rate)],
         "building": null,
         "count": zero,
-        "rate": null,
+        "rate": rate,
         "ignore": false,
-    }]
+    })
+    for (let [item, rate] of rates) {
+        addOutput(item, rate, false)
+    }
+    for (let [item, rate] of totals.surplus) {
+        addOutput(item, rate, true)
+    }
     let nodeMap = new Map()
-    nodeMap.set("output", nodes[0])
+    // Map item to the recipes making it and how much each makes.
+    let producers = new Map()
 
     for (let [recipe, rate] of totals.rates) {
         let building = spec.getBuilding(recipe)
         let count = spec.getCount(recipe, rate)
         let node = {
-            "name": recipe.name,
+            "name": nameOf(recipe),
             "ingredients": recipe.ingredients,
             "recipe": recipe,
             "building": building,
@@ -62,7 +90,13 @@ function makeGraph(totals, targets, ignore) {
             "ignore": ignore.has(recipe),
         }
         nodes.push(node)
-        nodeMap.set(recipe.name, node)
+        nodeMap.set(recipe, node)
+        for (let product of recipe.products) {
+            if (!producers.has(product.item)) {
+                producers.set(product.item, [])
+            }
+            producers.get(product.item).push({recipe, made: rate.mul(product.amount)})
+        }
     }
 
     let links = []
@@ -72,29 +106,16 @@ function makeGraph(totals, targets, ignore) {
         }
         for (let ing of node.ingredients) {
             let rate
-            if (node.name == "output") {
+            if (node.recipe === undefined) {
                 rate = ing.amount
             } else {
                 rate = totals.rates.get(node.recipe).mul(ing.amount)
             }
-            for (let subRecipe of ing.item.recipes) {
-                if (totals.rates.has(subRecipe)) {
-                    let link = {
-                        "source": nodeMap.get(subRecipe.name),
-                        "target": node,
-                        "value": rate.toFloat(),
-                        "rate": rate,
-                    }
-                    let belts = []
-                    let beltCountExact = spec.getBeltCount(rate)
-                    let beltCount = beltCountExact.toFloat()
-                    for (let j = one; j.less(beltCountExact); j = j.add(one)) {
-                        let i = j.toFloat()
-                        belts.push({link, i, beltCount})
-                    }
-                    link.belts = belts
-                    links.push(link)
-                }
+            // When several recipes make the item, each supplies its share.
+            let sources = producers.get(ing.item) || []
+            let totalMade = sources.reduce((sum, s) => sum.add(s.made), zero)
+            for (let {recipe, made} of sources) {
+                links.push(makeLink(nodeMap.get(recipe), node, ing.item, rate.mul(made).div(totalMade)))
             }
         }
     }
@@ -108,7 +129,10 @@ function recipeValue(recipe, rate, ignore) {
             inputValue = inputValue.add(rate.mul(ing.amount))
         }
     }
-    let outputValue = rate.mul(recipe.product.amount)
+    let outputValue = zero
+    for (let product of recipe.products) {
+        outputValue = outputValue.add(rate.mul(product.amount))
+    }
     if (inputValue.less(outputValue)) {
         return outputValue
     } else {
@@ -125,17 +149,12 @@ function rankHeightEstimate(rank, valueFactor) {
 }
 
 function getRateString(d) {
-    return d.rate === null ? "" : `\u00d7 ${spec.format.rate(d.rate)}/${spec.format.rateName}`
+    return d.rate === null ? "" : `\u00d7 ${spec.format.rate(d.rate)}/${rateUnit(spec.format.rateName)}`
 }
 
 function getMachineCountString(d) {
     console.assert(!d.count.isZero(), "Items that aren't produced through machines can't have a machine count!")
-    return `\u00d7 ${spec.format.count(d.count)}`
-}
-
-function getOverclockString(d) {
-    console.assert(!d.count.isZero(), "Items that aren't produced through machines (machine count == 0) can't have an overclock value!")
-    return `${spec.getOverclock(d.recipe).mul(Rational.from_float(100)).toString()}%`
+    return `\u00d7 ${spec.format.count(d.count)}${d.building.getCountSuffix()}`
 }
 
 // This is basically an educated guess, but seems to match whatever Chrome and
@@ -184,12 +203,23 @@ export function renderTotals(totals, targets, ignore) {
         }
         rankList.push(value)
     }
-    if (largestValue.isZero()) {
+    // The output nodes form a column of their own.
+    let outputValues = data.nodes.filter(node => node.recipe === undefined).map(node => node.rate)
+    ranks.set(-1, outputValues)
+    for (let value of outputValues) {
+        if (largestValue.less(value)) {
+            largestValue = value
+        }
+    }
+    // Nothing to draw: no targets, or no solution for them.
+    if (largestValue.isZero() || totals.rates.size === 0) {
+        d3.select("svg#graph").selectAll("g").remove()
         return
     }
-    let beltDensity = maxNodeHeight / spec.getBeltCount(largestValue).toFloat()
-    // The width of the display is the number of ranks, times the width of each
-    // rank, plus a small constant for the output node.
+    let tallest = maxNodeHeight * spec.graphScale
+    let beltDensity = tallest / spec.getBeltCount(largestValue).toFloat()
+    // The width of the display is the number of columns, times the width of
+    // each. Heights start at 0, and the output nodes add one more column.
     let maxTextWidth = 0
     let testSVG = d3.select("body").append("svg")
     for (let node of data.nodes) {
@@ -198,9 +228,11 @@ export function renderTotals(totals, targets, ignore) {
             text = text.text(getRateString(node))
         } else {
             text.append("tspan").attr("x", 0).text(getMachineCountString(node))
-            text.append("tspan").attr("x", 0).text(getOverclockString(node))
         }
         let textWidth = text.node().getBBox().width
+        if (!node.count.isZero()) {
+            textWidth += buildingIconSize + 2
+        }
         text.remove()
         if (textWidth > maxTextWidth) {
             maxTextWidth = textWidth
@@ -208,11 +240,10 @@ export function renderTotals(totals, targets, ignore) {
     }
     testSVG.remove()
     let nodeWidth = iconSize + maxTextWidth + 4
-    let width = maxRank * (nodeWidth + columnWidth) + nodeWidth
+    let width = (maxRank + 1) * (nodeWidth + columnWidth) + nodeWidth
     // The height of the display is normalized by the height of the tallest box
-    // in the graph. We define it to be (approximately) maxNodeHeight pixels
-    // high.
-    let valueFactor = Rational.from_float(maxNodeHeight).div(largestValue)
+    // in the graph. We define it to be (approximately) `tallest` pixels high.
+    let valueFactor = Rational.from_float(tallest).div(largestValue)
     let largestEstimate = 0
     for (let [rank, rankList] of ranks) {
         let estimate = rankHeightEstimate(rankList, valueFactor)
@@ -249,15 +280,14 @@ export function renderTotals(totals, targets, ignore) {
         .attr("y", d => d.y0)
         .attr("height", d => d.y1 - d.y0)
         .attr("width", d => d.x1 - d.x0)
-        .attr("fill", d => d3.color(color(d.name)).darker())
-    rects.filter(d => d.name != "output")
-        .append("image")
+        .attr("fill", d => d.surplus ? "#555" : d3.color(color(d.name)).darker())
+    rects.append("image")
             .classed("ignore", d => ignore.has(d.recipe))
             .attr("x", d => d.x0 + 2)
             .attr("y", d => d.y0 + (d.y1 - d.y0) / 2 - (iconSize / 2))
             .attr("height", iconSize)
             .attr("width", iconSize)
-            .attr("xlink:href", d => d.recipe.iconPath())
+            .attr("xlink:href", d => d.recipe ? d.recipe.iconPath() : d.item.iconPath())
 
     // For nodes without an associated machine, display the rate on a single line:
     rects.filter(d => d.count.isZero())
@@ -268,20 +298,21 @@ export function renderTotals(totals, targets, ignore) {
             .attr("text-anchor", "start")
             .text(getRateString)
 
-    // For nodes with an associated machine, display the machine count on one
-    // line, and the overclock rate on the next line:
-    let twoLineText = rects.filter(d => !d.count.isZero())
-        .append("text")
-            .attr("x", d => d.x0 + iconSize + 2)
-            .attr("y", d => (d.y0 + d.y1) / 2)
-            .attr("dy", "-0.15em") // (0.35em minus half a line's height (0.5em), maintaining vertical alignment)
-            .attr("text-anchor", "start")
-    twoLineText.append("tspan")
-        .text(getMachineCountString)
-    twoLineText.append("tspan") // ("x" and "dy" are used to render the text on the next line)
+    // For nodes with an associated machine, display the machine's icon and
+    // count:
+    let machineNodes = rects.filter(d => !d.count.isZero())
+    machineNodes.append("image")
         .attr("x", d => d.x0 + iconSize + 2)
-        .attr("dy", "1em")
-        .text(getOverclockString)
+        .attr("y", d => (d.y0 + d.y1) / 2 - buildingIconSize / 2)
+        .attr("height", buildingIconSize)
+        .attr("width", buildingIconSize)
+        .attr("xlink:href", d => d.building.iconPath())
+    machineNodes.append("text")
+        .attr("x", d => d.x0 + iconSize + buildingIconSize + 4)
+        .attr("y", d => (d.y0 + d.y1) / 2)
+        .attr("dy", "0.35em")
+        .attr("text-anchor", "start")
+        .text(getMachineCountString)
 
     // Link paths
     let link = svg.append("g")
@@ -309,13 +340,21 @@ export function renderTotals(totals, targets, ignore) {
                 .attr("stroke-width", 1)
     }
     link.append("title")
-        .text(d => `${d.source.name} \u2192 ${d.target.name}\n${spec.format.rate(d.rate)}`)
+        .text(d => `${d.source.name} \u2192 ${d.target.name}\n${nameOf(d.item)}: ${spec.format.rate(d.rate)}/${rateUnit(spec.format.rateName)}`)
+    // A recipe may send several items, so label each link with its item.
+    const linkIconSize = 16
+    link.append("image")
+        .attr("x", d => d.source.x1 + 4)
+        .attr("y", d => d.y0 - linkIconSize / 2)
+        .attr("height", linkIconSize)
+        .attr("width", linkIconSize)
+        .attr("xlink:href", d => d.item.iconPath())
     link.append("text")
-        .attr("x", d => d.source.x1 + 6)
+        .attr("x", d => d.source.x1 + 6 + linkIconSize)
         .attr("y", d => d.y0)
         .attr("dy", "0.35em")
         .attr("text-anchor", "start")
-        .text(d => spec.format.rate(d.rate) + "/" + spec.format.rateName)
+        .text(d => spec.format.rate(d.rate) + "/" + rateUnit(spec.format.rateName))
 
     // Overlay transparent rect on top of each node, for click events.
     let rectElements = svg.selectAll("g.node").nodes()
@@ -347,6 +386,6 @@ export function renderTotals(totals, targets, ignore) {
             .attr("height", d => d.rect.height)
             .on("click", toggleIgnoreHandler)
             .append("title")
-                .text(d => d.node.name + (d.node.count.isZero() ? "" : `\n${d.node.building.name} ${getMachineCountString(d.node)}\n${getOverclockString(d.node)}`))
+                .text(d => d.node.name + (d.node.count.isZero() ? "" : `\n${nameOf(d.node.building)} ${getMachineCountString(d.node)}`))
 }
 

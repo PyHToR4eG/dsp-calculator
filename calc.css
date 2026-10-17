@@ -64,7 +64,7 @@ img.icon {
 .ignore {
     opacity: 0.3;
 }
-.hide-building, .hide-power-shard {
+.hide-building {
     visibility: hidden;
 }
 /* build targets */
@@ -118,10 +118,10 @@ td.setting-label {
 input.prec {
     width: 4em;
 }
-#belt_selector input[type="radio"] {
+.icon-selector input[type="radio"] {
     display: none;
 }
-#belt_selector input[type="radio"] + label {
+.icon-selector input[type="radio"] + label {
     cursor: pointer;
     background: var(--light);
     border-radius: 4px;
@@ -131,57 +131,12 @@ input.prec {
     margin: 2px;
     padding: 2px;
 }
-#belt_selector input[type="radio"] + label:hover {
+.icon-selector input[type="radio"] + label:hover {
     background: var(--bright);
 }
-#belt_selector input[type="radio"]:checked + label {
+.icon-selector input[type="radio"]:checked + label {
     background: var(--accent);
 }
-
-#assembler_selector input[type="radio"] {
-    display: none;
-}
-#assembler_selector input[type="radio"] + label {
-    cursor: pointer;
-    background: var(--light);
-    border-radius: 4px;
-    width: 32px;
-    height: 32px;
-    display: inline-block;
-    margin: 2px;
-    padding: 2px;
-}
-#assembler_selector input[type="radio"] + label:hover {
-    background: var(--bright);
-}
-#assembler_selector input[type="radio"]:checked + label {
-    background: var(--accent);
-}
-
-
-
-#smelting_selector input[type="radio"] {
-    display: none;
-}
-#smelting_selector input[type="radio"] + label {
-    cursor: pointer;
-    background: var(--light);
-    border-radius: 4px;
-    width: 32px;
-    height: 32px;
-    display: inline-block;
-    margin: 2px;
-    padding: 2px;
-}
-#smelting_selector input[type="radio"] + label:hover {
-    background: var(--bright);
-}
-#smelting_selector input[type="radio"]:checked + label {
-    background: var(--accent);
-}
-
-
-
 
 table.resource {
     border-collapse: collapse;
@@ -280,11 +235,17 @@ tr.display-row td {
     padding-top: 8px;
     padding-bottom: 8px;
 }
-input.overclock {
-    width: 4em;
-}
 tr.nobuilding td.building {
     display: none;
+}
+/* error message */
+#error {
+    margin: 8px 0;
+    padding: 8px 12px;
+    border: 1px solid var(--accent);
+    border-radius: 4px;
+    background: var(--medium);
+    color: var(--bright);
 }
 /* about */
 .about-content {

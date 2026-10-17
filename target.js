@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.*/
 import { makeDropdown, addInputs } from "./dropdown.js"
 import { spec } from "./factory.js"
+import { nameOf, t } from "./i18n.js"
 import { Rational, zero, one } from "./rational.js"
 
 const SELECTED_INPUT = "selected"
@@ -48,10 +49,87 @@ function changeRateHandler(target) {
     }
 }
 
+// The game's replicator pages, by the first number of an item's grid cell.
+const PICKER_PAGES = [[1, "Components"], [2, "Buildings"]]
+
+function normalize(text) {
+    return text.toLowerCase().replace(/ё/g, "е")
+}
+
+// The item picker mirrors the game's replicator: a Components and a Buildings
+// page with each item in its in-game cell, plus a search box that matches
+// names in either language. Returns the labels, as addInputs does.
+function renderItemPicker(dropdown, name, items, selected, handler) {
+    let header = dropdown.append("div")
+        .classed("picker-header", true)
+        // Clicks here shouldn't close the dropdown.
+        .on("click", () => d3.event.stopPropagation())
+    let tabs = header.selectAll("button")
+        .data(PICKER_PAGES)
+        .join("button")
+            .classed("picker-tab", true)
+            .text(([page, label]) => t(label))
+    let search = header.append("input")
+        .classed("picker-search", true)
+        .attr("type", "search")
+        .attr("placeholder", t("Search"))
+        .attr("data-focus-on-open", "")
+    let pages = dropdown.selectAll("div.picker-page")
+        .data(PICKER_PAGES)
+        .join("div")
+            .classed("picker-page", true)
+    let itemSpan = pages.selectAll("span")
+        .data(([page]) => items.filter(item => item.grid[0] === page))
+        .join("span")
+            .style("grid-row", item => item.grid[1] + 1)
+            .style("grid-column", item => item.grid[2] + 1)
+
+    let currentPage = selected.grid[0]
+    let showPage = page => {
+        currentPage = page
+        tabs.classed("active", ([p]) => p === page)
+        pages.classed("hidden", ([p]) => p !== page)
+    }
+    let filter = text => {
+        let query = normalize(text.trim())
+        dropdown.classed("searching", query !== "")
+        itemSpan.classed("hidden", item => query !== ""
+            && !normalize(nameOf(item)).includes(query) && !normalize(item.name).includes(query))
+        if (query === "") {
+            showPage(currentPage)
+        } else {
+            tabs.classed("active", false)
+            pages.classed("hidden", false)
+        }
+    }
+    showPage(currentPage)
+    tabs.on("click", ([page]) => {
+        search.property("value", "")
+        filter("")
+        showPage(page)
+    })
+    search
+        .on("input", function() {
+            filter(this.value)
+        })
+        // Enter picks the first match.
+        .on("keydown", function() {
+            if (d3.event.key === "Enter") {
+                let match = itemSpan.filter(function() {
+                    return !this.classList.contains("hidden")
+                }).node()
+                if (match !== null) {
+                    match.querySelector("label").click()
+                }
+            }
+        })
+    return addInputs(itemSpan, name, d => d === selected, handler)
+}
+
 let targetCount = 0
 
 export class BuildTarget {
-    constructor(index, itemKey, item, tiers) {
+    constructor(index, itemKey, item, items) {
         this.index = index
         this.itemKey = itemKey
         this.item = item
@@ -64,36 +142,25 @@ export class BuildTarget {
         element.append("button")
             .classed("targetButton ui", true)
             .text("x")
-            .attr("title", "Remove this item.")
+            .attr("title", t("Remove this item."))
             .on("click", removeHandler(this))
         this.element = element.node()
 
-        let dropdown = makeDropdown(element)
-        let itemSpan = dropdown.selectAll("div")
-            .data(tiers)
-            .join("div")
-                .selectAll("span")
-                .data(d => d)
-                .join("span")
-        let itemLabel = addInputs(
-            itemSpan,
-            `target-${targetCount}`,
-            d => d === item,
-            itemHandler(this),
-        )
+        let itemLabel = renderItemPicker(makeDropdown(element), `target-${targetCount}`,
+            items, item, itemHandler(this))
 
         itemLabel.append("img")
             .classed("icon", true)
             .attr("src", d => d.iconPath())
             //.attr("width", 32)
             //.attr("height", 32)
-            .attr("title", d => d.name)
+            .attr("title", d => nameOf(d))
 
         targetCount++
 
         this.buildingLabel = element.append("label")
             .classed(SELECTED_INPUT, true)
-            .text(" Buildings: ")
+            .text(" " + t("Buildings:") + " ")
             .node()
 
         this.buildingInput = element.append("input")
@@ -101,7 +168,7 @@ export class BuildTarget {
             .attr("type", "text")
             .attr("value", 1)
             .attr("size", 3)
-            .attr("title", "Enter a value to specify the number of buildings. The rate will be determined based on the number of items a single building can make.")
+            .attr("title", t("Enter a value to specify the number of buildings. The rate will be determined based on the number of items a single building can make."))
             .node()
 
         this.rateLabel = element.append("label")
@@ -113,11 +180,11 @@ export class BuildTarget {
             .attr("type", "text")
             .attr("value", "")
             .attr("size", 5)
-            .attr("title", "Enter a value to specify the rate. The number of buildings will be determined based on the rate.")
+            .attr("title", t("Enter a value to specify the rate. The number of buildings will be determined based on the rate."))
             .node()
     }
     setRateLabel() {
-        this.rateLabel.textContent = " Items/" + spec.format.longRate + ": "
+        this.rateLabel.textContent = " " + t("Items/" + spec.format.longRate + ":") + " "
     }
     getRate() {
         this.setRateLabel()

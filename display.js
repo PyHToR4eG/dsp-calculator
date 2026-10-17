@@ -13,7 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.*/
 import { toggleIgnoreHandler } from "./events.js"
 import { spec } from "./factory.js"
-import { Rational, zero, one } from "./rational.js"
+import { nameOf, rateUnit, t } from "./i18n.js"
+import { Rational, zero } from "./rational.js"
 
 class Header {
     constructor(text, colspan) {
@@ -22,19 +23,14 @@ class Header {
     }
 }
 
-function changeOverclock(d) {
-    let hundred = Rational.from_float(100)
-    let twoFifty = Rational.from_float(250)
-    let x = Rational.from_string(this.value).floor()
-    if (x.less(one)) {
-        x = one
+// Building power in data.json is in kW.
+let thousand = Rational.from_float(1000)
+
+function formatPower(kw) {
+    if (kw.less(thousand)) {
+        return spec.format.alignCount(kw) + " " + t("kW")
     }
-    if (twoFifty.less(x)) {
-        x = twoFifty
-    }
-    x = x.div(hundred)
-    spec.setOverclock(d.recipe, x)
-    spec.updateSolution()
+    return spec.format.alignCount(kw.div(thousand)) + " " + t("MW")
 }
 
 // Remember these values from update to update, to make it simpler to reuse
@@ -48,15 +44,12 @@ export function displayItems(spec, totals, ignore) {
     }
     let totalAveragePower = zero
     let totalPeakPower = zero
-    let powerShardsUsed = 0
     for (let i = 0; i < totals.topo.length; i++) {
         let recipe = totals.topo[i]
         let display = displayedItems[i]
         let rate = totals.rates.get(recipe)
         let item = recipe.product.item
         let itemRate = rate.mul(recipe.gives(item))
-        let overclock = spec.getOverclock(recipe)
-        let overclockString = overclock.mul(Rational.from_float(100)).toString()
         let {average, peak} = spec.getPowerUsage(recipe, rate, totals.topo.length)
         totalAveragePower = totalAveragePower.add(average)
         totalPeakPower = totalPeakPower.add(peak)
@@ -68,19 +61,15 @@ export function displayItems(spec, totals, ignore) {
         display.building = spec.getBuilding(recipe)
         display.count = spec.getCount(recipe, rate)
 
-        display.overclock = overclockString
-        display.powerShardCount = display.ignore ? 0 : Math.ceil(Math.max(overclock.toFloat() - 1, 0) / 0.5)
-        powerShardsUsed += display.powerShardCount
         display.average = average
         display.peak = peak
     }
 
     let headers = [
-        new Header("items/" + spec.format.rateName, 2),
-        new Header("belts", 2),
-        new Header("buildings", 2),
-        new Header("overclock", powerShardsUsed ? 3 : 1),
-        new Header("power", 1),
+        new Header(t("items/" + spec.format.longRate), 2),
+        new Header(t("belts"), 2),
+        new Header(t("buildings"), 2),
+        new Header(t("power"), 1),
     ]
     let totalCols = 0
     for (let header of headers) {
@@ -143,18 +132,6 @@ export function displayItems(spec, totals, ignore) {
         .append("td")
             .attr("colspan", 4)
     */
-    // overclock
-    let overclockCell = row.append("td")
-        .classed("pad building overclock", true)
-    overclockCell.append("input")
-        .classed("overclock", true)
-        .attr("type", "number")
-        .attr("title", "")
-        .attr("min", 1)
-        .attr("max", 250)
-        .on("input", changeOverclock)
-    overclockCell.append(() => new Text("%"))
-
     // power
     row.append("td")
         .classed("right-align pad building", true)
@@ -167,65 +144,23 @@ export function displayItems(spec, totals, ignore) {
     row.selectAll("img.item-icon")
         .classed("ignore", d => d.ignore)
         .attr("src", d => d.item.iconPath())
-        .attr("title", d => d.item.name)
+        .attr("title", d => nameOf(d.item))
     row.selectAll("tt.item-rate")
         .text(d => spec.format.alignRate(d.itemRate))
     row.selectAll("img.belt-icon")
         .attr("src", spec.belt.iconPath())
-        .attr("title", spec.belt.name)
+        .attr("title", nameOf(spec.belt))
     row.selectAll("tt.belt-count")
         .text(d => spec.format.alignCount(spec.getBeltCount(d.itemRate)))
     let buildingRow = row.filter(d => d.building !== null)
     buildingRow.selectAll("img.building-icon")
         .attr("src", d => d.building.iconPath())
-        .attr("title", d => d.building.name)
+        .attr("title", d => nameOf(d.building))
     buildingRow.selectAll("tt.building-count")
-        .text(d => spec.format.alignCount(d.count))
-    buildingRow.selectAll("input.overclock")
-        .attr("value", d => d.overclock)
-
-    // If power shards are used at all...
-    if (powerShardsUsed) {
-
-        // ...if the table's power shard column is "collapsed"...
-        if (table.classed("power-shard-collapsed")) {
-            let powerShard = spec.items.get("power-shard")
-
-            // ...insert a power shard cell after each overclock cell:
-            let powerShardCell = buildingRow.insert("td", "td.overclock + *")
-                .classed("pad building power-shard power-shard-icon", true)
-            powerShardCell.append("img")
-                .classed("icon", true)
-                .attr("src", powerShard.iconPath())
-                .attr("title", powerShard.name)
-                .attr("width", 32)
-                .attr("height", 32)
-            powerShardCell.append(d => new Text(" \u00d7"))
-
-            buildingRow.insert("td", "td.power-shard-icon + *")
-                .classed("right-align building power-shard", true)
-                .append("tt")
-                    .classed("power-shard-count", true)
-
-            // ...mark the table's power shard column "uncollapsed":
-            table.classed("power-shard-collapsed", false)
-        }
-
-        // ...update the counts of each power shard cell, and hide any power
-        // shard cell with a count of 0:
-        buildingRow.selectAll("tt.power-shard-count").text(d => d.powerShardCount)
-        buildingRow.selectAll(".power-shard").classed("hide-power-shard", d => d.powerShardCount == 0)
-    }
-    
-    // Otherwise, remove all power shard cells, and mark the table's power
-    // shard column "collapsed":
-    else {
-        buildingRow.selectAll(".power-shard").remove()
-        table.classed("power-shard-collapsed", true)
-    }
+        .text(d => spec.format.alignCount(d.count) + d.building.getCountSuffix())
 
     buildingRow.selectAll("tt.power")
-        .text(d => spec.format.alignCount(d.average) + " MW")
+        .text(d => formatPower(d.average))
     buildingRow.selectAll(".building")
         .classed("hide-building", d => d.ignore)
 
@@ -235,11 +170,40 @@ export function displayItems(spec, totals, ignore) {
         .attr("colspan", totalCols - 1)
     footerPowerRow.select("tt")
         .data(totalPower)
-        .text(d => spec.format.alignCount(d) + " MW")
+        .text(d => formatPower(d))
 
-    let footerPowerShardRow = table.select("tfoot tr.power-shard")
-    footerPowerShardRow.select("td.label")
-        .attr("colspan", totalCols - 1)
-    footerPowerShardRow.select("tt")
-        .text(powerShardsUsed)
+    // Byproducts made beyond what the factory uses.
+    let surplus = d3.select("#surplus")
+    surplus.selectAll("*").remove()
+    if (totals.surplus.size > 0) {
+        surplus.append("b").text(t("surplus:") + " ")
+        let entry = surplus.selectAll("span")
+            .data([...totals.surplus])
+            .join("span")
+                .classed("pad", true)
+                .attr("title", ([item]) => nameOf(item))
+        entry.append("img")
+            .classed("icon", true)
+            .attr("src", ([item]) => item.iconPath())
+            .attr("width", 32)
+            .attr("height", 32)
+        entry.append("tt")
+            .text(([item, rate]) => ` ${spec.format.rate(rate)}/${rateUnit(spec.format.rateName)} `)
+    }
+}
+
+// Explains why there is no solution, or hides the message when items is null.
+export function renderError(items) {
+    let box = d3.select("#error")
+    if (items === null) {
+        box.style("display", "none").text("")
+        return
+    }
+    let text = t("These targets can't be made with the chosen recipes.")
+    if (items.length > 0) {
+        text += " " + t("These items are only made from each other:") + " "
+            + items.map(item => nameOf(item)).join(", ") + ". "
+            + t("Choose another recipe for one of them in Settings, Recipes.")
+    }
+    box.style("display", null).text(text)
 }

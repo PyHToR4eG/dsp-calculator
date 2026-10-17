@@ -38,22 +38,24 @@ See the License for the specific language governing permissions and
 limitations under the License.-->
 
 <body onload="handlers.init()">
-<h1>
+<h1 data-i18n>
     Dyson Sphere Calculator
 </h1>
 <ul id="targets">
     <li id="plusButton">
-        <button class="targetButton ui" title="Add new item."
+        <button class="targetButton ui" title="Add new item." data-i18n-title
                 onclick="handlers.plusHandler()">+
         </button>
     </li>
 </ul>
 
+<div id="error" style="display: none"></div>
+
 <div class="tabs">
-    <button class="tab_button" id="graph_button" onclick="handlers.clickTab('graph')">Visualize</button>
-    <button class="tab_button" id="totals_button" onclick="handlers.clickTab('totals')">Items</button>
-    <button class="tab_button" id="settings_button" onclick="handlers.clickTab('settings')">Settings</button>
-    <button class="tab_button" id="about_button" onclick="handlers.clickTab('about')">About</button>
+    <button class="tab_button" id="graph_button" onclick="handlers.clickTab('graph')" data-i18n>Visualize</button>
+    <button class="tab_button" id="totals_button" onclick="handlers.clickTab('totals')" data-i18n>Items</button>
+    <button class="tab_button" id="settings_button" onclick="handlers.clickTab('settings')" data-i18n>Settings</button>
+    <button class="tab_button" id="about_button" onclick="handlers.clickTab('about')" data-i18n>About</button>
 </div>
 
 <div id="graph_tab" class="tab graph">
@@ -63,78 +65,120 @@ limitations under the License.-->
 </div>
 
 <div id="totals_tab" class="tab">
-    <table id="totals" class="power-shard-collapsed">
+    <table id="totals">
         <thead>
         <tr></tr>
         </thead>
         <tbody></tbody>
         <tfoot>
         <tr class="power">
-            <td class="right-align label"><b>total average power: </b></td>
+            <td class="right-align label"><b data-i18n>total average power:</b></td>
             <td class="right-align pad"><tt></tt></td>
         </tr>
         <tr class="power">
-            <td class="right-align label"><b>total peak power: </b></td>
-            <td class="right-align pad"><tt></tt></td>
-        </tr>
-        <tr class="power-shard">
-            <td class="right-align label"><b>power shards needed: </b></td>
+            <td class="right-align label"><b data-i18n>total peak power:</b></td>
             <td class="right-align pad"><tt></tt></td>
         </tr>
         </tfoot>
     </table>
+    <div id="surplus"></div>
 </div>
 
 <div id="settings_tab" class="tab">
     <table id="settings">
         <tr class="setting-section">
-            <td colspan="2"><span>Display</span>
+            <td colspan="2"><span data-i18n>Display</span>
                 <hr>
             </td>
         </tr>
 
         <tr class="setting-row">
-            <td class="setting-label top">Display rates as:</td>
+            <td class="setting-label" data-i18n>Language:</td>
+            <td><span id="language_selector"></span></td>
+        </tr>
+
+        <tr class="setting-row">
+            <td class="setting-label top" data-i18n>Display rates as:</td>
             <td>
                 <form id="display_rate"></form>
             </td>
         </tr>
 
         <tr class="setting-row">
-            <td class="setting-label">Rate precision:</td>
+            <td class="setting-label" data-i18n>Rate precision:</td>
             <td><input id="rprec" class="prec" type="number" value="3" min="0"
                        onchange="handlers.changeRatePrecision(event)"></td>
         </tr>
 
         <tr class="setting-row">
-            <td class="setting-label">Count precision:</td>
+            <td class="setting-label" data-i18n>Count precision:</td>
             <td><input id="cprec" class="prec" type="number" value="1" min="0"
                        onchange="handlers.changeCountPrecision(event)"></td>
         </tr>
 
+        <tr class="setting-row">
+            <td class="setting-label" data-i18n>Graph height:</td>
+            <td><input id="graph_scale" class="prec" type="number" min="0.5" max="10" step="0.5"
+                       title="Makes the graph taller, for big factories." data-i18n-title> &times;</td>
+        </tr>
+
         <tr class="setting-section">
-            <td colspan="2"><span>Factory</span>
+            <td colspan="2"><span data-i18n>Factory</span>
                 <hr>
             </td>
         </tr>
 
         <tr class="setting-row">
-            <td class="setting-label">Belt:</td>
-            <td><span id="belt_selector"></span></td>
+            <td class="setting-label" data-i18n>Belt:</td>
+            <td><span id="belt_selector" class="icon-selector"></span></td>
         </tr>
 
         <tr class="setting-row">
-            <td class="setting-label">Assembling Machine:</td>
-            <td><span id="assembler_selector"></span></td>
+            <td class="setting-label" data-i18n>Belt stack:</td>
+            <td><input id="belt_stack" class="prec" type="number" min="1" max="4"
+                       title="Items stacked on the belt by pilers or logistics stations." data-i18n-title></td>
         </tr>
 
-        <tr class="setting-row">
-            <td class="setting-label">Smelting:</td>
-            <td><span id="smelting_selector"></span></td>
-        </tr>
+        <tbody id="building_settings"></tbody>
 
         <tr class="setting-section">
-            <td colspan="2"><span>Recipes</span>
+            <td colspan="2"><span data-i18n>Mining</span>
+                <hr>
+            </td>
+        </tr>
+
+        <tr class="setting-row">
+            <td class="setting-label" data-i18n>Mining machine:</td>
+            <td><span id="miner_selector" class="icon-selector"></span></td>
+        </tr>
+
+        <tr class="setting-row">
+            <td class="setting-label" data-i18n>Advanced miner speed:</td>
+            <td><input id="mining_speed" class="prec" type="number" min="100" max="300" step="10"> %</td>
+        </tr>
+
+        <tr class="setting-row">
+            <td class="setting-label" data-i18n>Veins per miner:</td>
+            <td><input id="veins_per_miner" class="prec" type="number" min="1"
+                       title="Only used to estimate how many mining machines draw power." data-i18n-title></td>
+        </tr>
+
+        <tr class="setting-row">
+            <td class="setting-label" data-i18n>Veins Utilization level:</td>
+            <td><input id="veins_utilization" class="prec" type="number" min="0"
+                       title="Each level adds 10% speed to mining machines, water pumps and oil extractors." data-i18n-title></td>
+        </tr>
+
+        <tr class="setting-row">
+            <td class="setting-label" data-i18n>Oil seep yield:</td>
+            <td><input id="oil_seep" class="prec" type="number" min="0" step="0.1"
+                       title="Crude oil per second shown on the seep, before research." data-i18n-title> <span id="oil_seep_unit"></span></td>
+        </tr>
+
+        <tbody id="giant_settings"></tbody>
+
+        <tr class="setting-section">
+            <td colspan="2"><span data-i18n>Recipes</span>
                 <hr>
             </td>
         </tr>
@@ -151,9 +195,16 @@ limitations under the License.-->
 <div id="about_tab" class="tab">
     <div class="about-content">
         <p>
-            This calculator is based on my <a href="https://github.com/yesterdaysun/dsp-calculator">dsp-calculator</a>
-            but redesigned to fix some of the faults of the original design
-            Source can be found <a href="https://github.com/pigeon-barry/dsp-calculator">Here</a>
+            <span data-i18n>This calculator is based on</span>
+            <a href="https://github.com/KirkMcDonald/satisfactory-calculator">Satisfactory Calculator</a>
+            <span data-i18n>by Kirk McDonald and its Dyson Sphere Program forks.</span>
+            (<a href="https://github.com/yesterdaysun/dsp-calculator">yesterdaysun</a>,
+            <a href="https://github.com/pigeon-barry/dsp-calculator">pigeon-barry</a>)
+        </p>
+        <p>
+            <span data-i18n>Source code:</span>
+            <a href="https://github.com/PyHToR4eG/dsp-calculator">PyHToR4eG/dsp-calculator</a>
+        </p>
     </div>
 </div>
 </body>

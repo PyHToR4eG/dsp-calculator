@@ -87,3 +87,62 @@
     background-color: var(--light);
     pointer-events: auto;
 }
+
+/* item picker: the game's replicator grid */
+.picker-header {
+    display: none;
+}
+.dropdownWrapper.open .picker-header {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    margin-bottom: 6px;
+}
+.picker-tab {
+    background: var(--medium);
+    color: var(--foreground);
+    border: 1px solid var(--light);
+    border-radius: 4px;
+    padding: 4px 10px;
+    cursor: pointer;
+}
+.picker-tab.active {
+    background: var(--light);
+    border-color: var(--accent);
+    color: var(--bright);
+}
+.picker-search {
+    margin-left: auto;
+    width: 14em;
+    background: var(--light);
+    color: var(--bright);
+    border: 1px solid var(--light);
+    border-radius: 4px;
+    padding: 4px 6px;
+}
+.dropdownWrapper .picker-page {
+    display: inline;
+}
+.dropdownWrapper.open .picker-page {
+    display: grid;
+    grid-template-columns: repeat(14, 52px);
+    grid-auto-rows: 52px;
+    gap: 2px;
+}
+.dropdownWrapper.open .picker-page.hidden,
+.dropdownWrapper.open .picker-page span.hidden {
+    display: none;
+}
+/* Search results are listed together instead of in their cells. */
+.dropdownWrapper.open .dropdown.searching .picker-page span {
+    grid-row: auto !important;
+    grid-column: auto !important;
+}
+.dropdownWrapper.open .dropdown .picker-page input[type="radio"] + label {
+    margin: 0;
+}
+.dropdownWrapper.open .dropdown .picker-page input[type="radio"] + label img {
+    height: 48px;
+    width: 48px;
+    padding: 2px;
+}

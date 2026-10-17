@@ -26,6 +26,11 @@ function toggleDropdown() {
             .style("width", selected.style("width"))
             .style("height", selected.style("height"))
         classes.add("open")
+        let focus = dropdownNode.querySelector("[data-focus-on-open]")
+        if (focus !== null) {
+            focus.focus()
+            focus.select()
+        }
     }
 }
 
